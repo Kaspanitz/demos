@@ -29,11 +29,13 @@ az network nsg rule create --resource-group $rg --nsg-name $nsg --name $nsgrule 
 
 # backend vms
 # nics, with DNS
-az network nic create --resource-group $rg --name $vm1nic --vnet-name $workloadvnet --subnet $workloadsubnet --network-security-group $nsg --public-ip-address "" --dns-servers 209.244.0.3 209.244.0.4
-az network nic create --resource-group $rg --name $vm2nic --vnet-name $workloadvnet --subnet $workloadsubnet --network-security-group $nsg --public-ip-address "" --dns-servers 209.244.0.3 209.244.0.4
+az network nic create --resource-group $rg --name $vm1nic --vnet-name $workloadvnet --subnet $workloadsubnet --network-security-group $nsg
+az network nic create --resource-group $rg --name $vm2nic --vnet-name $workloadvnet --subnet $workloadsubnet --network-security-group $nsg
 # vms in different zones
-az vm create --resource-group $rg --name $vm1 --nics $vm1nic --image UbuntuLTS --admin-user azureuser --generate-ssh-keys --custom-data cloud-init.txt --zone 1 --no-wait
-az vm create --resource-group $rg --name $vm2 --nics $vm2nic --image UbuntuLTS --admin-user azureuser --generate-ssh-keys --custom-data cloud-init.txt --zone 2 --no-wait
+# az vm create --resource-group $rg --name $vm1 --nics $vm1nic --image UbuntuLTS --admin-user azureuser --generate-ssh-keys --custom-data cloud-init.txt --zone 1 --no-wait #ssh-keys
+# az vm create --resource-group $rg --name $vm2 --nics $vm2nic --image UbuntuLTS --admin-user azureuser --generate-ssh-keys --custom-data cloud-init.txt --zone 2 --no-wait #ssh-keys
+az vm create --resource-group $rg --name $vm1 --nics $vm1nic --image UbuntuLTS --admin-user <user> --admin-password <password> --custom-data cloud-init.txt --zone 1 --no-wait
+az vm create --resource-group $rg --name $vm2 --nics $vm2nic --image UbuntuLTS --admin-user <user> --admin-password <password> --custom-data cloud-init.txt --zone 2 --no-wait
 
 # std load balancer
 az network lb create --resource-group $rg --name $lb --sku Standard --vnet-name $workloadvnet --subnet $workloadsubnet --frontend-ip-name FrontEndIP --backend-pool-name BackEndPool
@@ -41,6 +43,8 @@ az network lb create --resource-group $rg --name $lb --sku Standard --vnet-name 
 az network lb probe create --resource-group $rg --lb-name $lb --name HealthProbe --protocol tcp --port 80
 # lb rule
 az network lb rule create --resource-group $rg --lb-name $lb --name lbhttprule --protocol tcp --frontend-port 80 --backend-port 80 --frontend-ip-name FrontEndIP --backend-pool-name BackEndPool --probe-name HealthProbe --disable-outbound-snat true --idle-timeout 15 --enable-tcp-reset true
+
+# Note: create peering for bastion if required.
 
 <# **************************************
 Note

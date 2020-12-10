@@ -1,0 +1,162 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "publicIpPrefixName": {
+        "type": "String",
+        "defaultValue": "natgws3pip",
+        "metadata": {
+          "description": "Public IP prefix name"
+          }
+        },
+      "publicIPPrefixLength": {
+        "type": "String",
+        "defaultValue": "31",
+        "metadata": {
+          "description":"public IP prefix range in /31 range"
+          }
+        },
+      "ipVersion": {
+        "type": "String",
+        "defaultValue": "IPv4",
+        "metadata": {
+          "description":"Ip version V4"
+          }
+        },
+      "natgatewayname": {
+        "defaultValue": "natgws3",
+        "type": "String",
+        "metadata": {
+          "description": "Name of the NAT gateway resource"
+        }
+      },
+      "existingVirtualNetworkResourceGroup": {
+        "type": "string",
+        "defaultValue": "spoke3-vnet-rg",
+        "metadata": {
+            "description": "Name of the existing Virtual Network resource group"
+        }
+      },
+      "location": {
+        "defaultValue": "[resourceGroup().location]",
+        "type": "String",
+        "metadata": {
+          "description": "Location of resources"
+        }
+      },
+      "vnetname": {
+      "defaultValue": "spoke3-vnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of the virtual network"
+        }
+      },
+    "subnets": {
+      "type": "array",
+      "defaultValue": [
+          {
+              "name": "/workload",
+              "addressPrefix": "10.5.1.0/24"
+          },
+          {
+              "name": "/workload2",
+              "addressPrefix": "10.5.2.0/24"
+          }
+      ]
+      }
+    },
+    "variables": {
+      "publicIpName": "[concat(parameters('natgatewayname'), 'ip')]",
+      "publicIpAddresses": [
+        {
+          "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicipname'))]"
+        }
+      ]
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2019-11-01",
+        "name": "[variables('publicIpName')]",
+        "location": "[parameters('location')]",
+        "tags": {
+                "Env": "Dev",
+                "Criticality": "Mission Critical"
+            },
+        "sku": {
+          "name": "Standard"
+        },
+        "properties": {
+          "publicIPAddressVersion": "IPv4",
+          "publicIPAllocationMethod": "Static",
+          "idleTimeoutInMinutes": 4
+        }
+      },
+        {
+          "type": "Microsoft.Network/publicipprefixes",
+            "apiVersion": "2018-07-01",
+            "name": "[parameters('publicIpPrefixName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [],
+            "tags": {
+                "Env": "Dev",
+                "Criticality": "Mission Critical"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "prefixLength": "[parameters('publicIPPrefixLength')]",
+                "publicIPAddressVersion": "[parameters('ipVersion')]",
+                "ipTags": []
+            }
+        },
+      {
+        "type": "Microsoft.Network/natGateways",
+        "apiVersion": "2019-11-01",
+        "name": "[parameters('natgatewayname')]",
+        "location": "[parameters('location')]",
+        "tags": {
+                "Env": "Dev",
+                "Criticality": "Mission Critical"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicipname'))]",
+          "[resourceId('Microsoft.Network/publicipprefixes', parameters('publicIpPrefixName'))]"
+        ],
+        "sku": {
+          "name": "Standard"
+        },
+        "properties": {
+          "publicIpAddresses": "[variables('publicIpAddresses')]",
+          "publicIpPrefixes": [
+              {
+                  "id":"[resourceId(parameters('existingVirtualNetworkResourceGroup'),'Microsoft.Network/publicIPPrefixes', parameters('publicIpPrefixName'))]"
+              }
+          ],
+          "idleTimeoutInMinutes": 4
+        }
+      },
+      {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2020-05-01",
+      "copy": {
+        "name": "subnetcopy",
+        "count": 1
+      },
+      "name": "[concat(parameters('vnetname'), parameters('subnets')[copyIndex()].name)]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/natGateways', parameters('natgatewayname'))]"
+      ],
+      "properties": {
+        "addressPrefix": "[parameters('subnets')[copyIndex()].addressPrefix]",
+        "natGateway": {
+          "id": "[resourceId('Microsoft.Network/natGateways', parameters('natgatewayname'))]"
+        },
+        "privateEndpointNetworkPolicies": "Enabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      }
+      }
+    ]
+  }
