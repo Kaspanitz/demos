@@ -1,35 +1,34 @@
 . ./_vars.ps1
 
 <#
-az network watcher connection-monitor create --name "$app-nofd" --endpoint-source-name "jb-vm1" `
---endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/onprem-jb-rg/providers/Microsoft.Compute/virtualMachines/jb-vm1" `
+az network watcher connection-monitor create --name "$app-nofd" --endpoint-source-name "$vm1" `
+--endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/$vm1rg/providers/Microsoft.Compute/virtualMachines/$vm1" `
 --endpoint-dest-name "no-fd-web-test" --endpoint-dest-address "https://$app.azurewebsites.net" --test-config-name TCPTestConfig --protocol Tcp --tcp-port 443
 
-az network watcher connection-monitor create --name "$app-fd"  --endpoint-source-name "jb-vm1" `
---endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/onprem-jb-rg/providers/Microsoft.Compute/virtualMachines/jb-vm1" `
+az network watcher connection-monitor create --name "$app-fd"  --endpoint-source-name "$vm1" `
+--endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/$vm1rg/providers/Microsoft.Compute/virtualMachines/$vm1" `
 --endpoint-dest-name "fd-web-test" --endpoint-dest-address "https://$frontDoor.azurefd.net" --test-config-name TCPTestConfig --protocol Tcp --tcp-port 443
 
 
-az network watcher connection-monitor create --name "borgdc1-nofd" --endpoint-source-name "borgdc1" `
---endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/borgom12-rg/providers/Microsoft.Compute/virtualMachines/borgdc1" `
+az network watcher connection-monitor create --name "$vm2-nofd" --endpoint-source-name "$vm2" `
+--endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/$vm2rg/providers/Microsoft.Compute/virtualMachines/$vm2" `
 --endpoint-dest-name "no-fd-web-test" --endpoint-dest-address "http://jvappmod-sea.azurewebsites.net/" --test-config-name HTTPTestConfig --protocol http --tcp-port 80
 
-az network watcher connection-monitor create --name "borgdc1-fd"  --endpoint-source-name "borgdc1" `
---endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/borgom12-rg/providers/Microsoft.Compute/virtualMachines/borgdc1" `
+az network watcher connection-monitor create --name "$vm2-fd"  --endpoint-source-name "$vm2" `
+--endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/$vm2rg/providers/Microsoft.Compute/virtualMachines/$vm2" `
 --endpoint-dest-name "fd-web-test" --endpoint-dest-address "http://jvappmod.azurefd.net/" --test-config-name HTTPTestConfig --protocol http --tcp-port 80
 
-az network watcher connection-monitor create --name "borgdc1-nofd" --endpoint-source-name "atterosl3" `
---endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/borgom12-rg/providers/Microsoft.Compute/virtualMachines/borgdc1" `
+az network watcher connection-monitor create --name "$vm2-nofd" --endpoint-source-name "$onpremagent" `
+--endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/$vm2rg/providers/Microsoft.Compute/virtualMachines/$vm2" `
 --endpoint-dest-name "no-fd-web-test" --endpoint-dest-address "http://jvappmod-sea.azurewebsites.net/" --test-config-name HTTPTestConfig --protocol http --tcp-port 80
 
-az network watcher connection-monitor create --name "borgdc1-fd"  --endpoint-source-name "atterosl3" `
---endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/borgom12-rg/providers/Microsoft.Compute/virtualMachines/borgdc1" `
+az network watcher connection-monitor create --name "$vm2-fd"  --endpoint-source-name "$onpremagent" `
+--endpoint-source-resource-id "/subscriptions/$sub/resourceGroups/$vm2rg/providers/Microsoft.Compute/virtualMachines/$vm2" `
 --endpoint-dest-name "fd-web-test" --endpoint-dest-address "http://jvappmod.azurefd.net/" --test-config-name HTTPTestConfig --protocol http --tcp-port 80
 #>
 
 <#
 $wid = "/subscriptions/$sub/resourcegroups/hub-vnet-rg/providers/microsoft.operationalinsights/workspaces/$laws"
-$onpremagent = "atterosl3"
 $urls =@("http://jvappmod-sea.azurewebsites.net/", "http://jvappmod.azurefd.net/")
 
 foreach ($url in $urls)
@@ -53,7 +52,7 @@ az network watcher connection-monitor create `
 }
 #>
 
-$wid = "/subscriptions/$sub/resourcegroups/hub-vnet-rg/providers/microsoft.operationalinsights/workspaces/$laws"
+$wid = "/subscriptions/$sub/resourcegroups/$lawsrg/providers/microsoft.operationalinsights/workspaces/$laws"
 $direct = "http://jvappmod-sea.azurewebsites.net/"
 $fd = "http://jvappmod.azurefd.net/"
 
@@ -95,4 +94,4 @@ az network watcher connection-monitor create `
 
 # az network watcher connection-monitor --help
 
-# $rid_az = "/subscriptions/$sub/resourceGroups/borgom12-rg/providers/Microsoft.Compute/virtualMachines/borgdc1"
+# $rid_az = "/subscriptions/$sub/resourceGroups/$vm2rg/providers/Microsoft.Compute/virtualMachines/$vm2"
