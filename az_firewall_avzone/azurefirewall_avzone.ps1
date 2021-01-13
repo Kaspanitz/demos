@@ -20,7 +20,7 @@ az network vnet create --name $fwvnet --resource-group $fwrg --location $locatio
 #az network vnet subnet create --name Jump-SN --resource-group $fwrg --vnet-name $fwvnet --address-prefix 10.0.3.0/24
 
 # fw
-az network firewall create --name $fw --resource-group $fwrg --location $location --zones 1, 2, 3
+az network firewall create --name $fw --resource-group $fwrg --location $location --zones 1
 az network public-ip create --name $fwpip --resource-group $fwrg --location $location --allocation-method static --sku $fwsku
 az network firewall ip-config create --firewall-name $fw --name fw-config --public-ip-address $fwpip --resource-group $fwrg --vnet-name $fwvnet
 az network firewall update --name $fw --resource-group $fwrg 

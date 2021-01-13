@@ -1,5 +1,5 @@
 $location = 'southeastasia'
-$loc = 'sea'
+$loc = 'australiaeast'
 $rg = 'jvappmod-rg'
 $tags = 'project=app-mod-2021', 'owner=jv', 'delete-after=10-Nov-2021'
 $app = "jvappmod-$loc"
